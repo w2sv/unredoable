@@ -12,10 +12,11 @@ setup(
     packages=find_packages(exclude=(["tests"])),
     version=__version__,
     license='MIT',
-    description='Provision of object-specific undoing and redoing functionality through wrapper class',
+    description='Object-specific undoing and redoing functionality through wrapper class, as well as convenience for'
+                'integration into classes, managing unredoables',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    keywords=['singleton', 'borg', 'design-patterns'],
+    keywords=['state-management, frontend, web-development, gui'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

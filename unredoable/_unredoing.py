@@ -94,7 +94,10 @@ class UnredoableAdministrator(_UnredoableBase, ABC):
     def __init__(self, *obj: Any, max_stack_depths: int):
         self._unredoables: List[Unredoable] = list(
             map(
-                lambda _obj: Unredoable(_obj, max_stack_depths=max_stack_depths),
+                lambda _obj: Unredoable(
+                    _obj,
+                    max_stack_depths=max_stack_depths
+                ),
                 obj
             )
         )
@@ -102,7 +105,7 @@ class UnredoableAdministrator(_UnredoableBase, ABC):
     _Method = TypeVar('_Method', bound=Callable[..., Any])
 
     def state_pusher(method: _Method) -> _Method:  # type: ignore
-        """ Method decorator pushing state of all unredoable objects to unredoing stacks
+        """ Method decorator pushing state of all unredoable objects
             before triggering decorated method """
 
         @wraps(method)
