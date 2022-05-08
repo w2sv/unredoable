@@ -16,6 +16,24 @@ _undo = lambda unredoable: unredoable.undo()
 _redo = lambda unredoable: unredoable.redo()
 
 
+def test_raising_on_empty_undo_stack():
+    unredoable = Unredoable(int(), max_stack_depths=10)
+
+    with pytest.raises(AttributeError):
+        unredoable.undo()
+
+
+def test_raising_on_empty_redo_stack():
+    unredoable = Unredoable(int(), max_stack_depths=10)
+
+    with pytest.raises(AttributeError):
+        unredoable.redo()
+
+
+def test_call_forwarding(unredoable):
+    _ = unredoable.numerator
+
+
 ################################
 # Operation Feasibility checks #
 ################################

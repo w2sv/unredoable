@@ -1,40 +1,26 @@
-from abc import ABC, abstractmethod
 from collections import deque
 from copy import copy, deepcopy
-from functools import wraps
-from typing import Any, Callable, Deque, TypeVar, List
+from typing import Deque, TypeVar
 
 
-class _UnredoableBase(ABC):
-    @abstractmethod
-    def undo(self):
-        """  """
-
-    @abstractmethod
-    def redo(self):
-        """  """
-
-    @property
-    @abstractmethod
-    def is_undoable(self) -> bool:
-        """  """
-
-    @property
-    @abstractmethod
-    def is_redoable(self) -> bool:
-        """  """
+_T = TypeVar('_T')
 
 
-class Unredoable(_UnredoableBase):
+class Unredoable:
     """ Wrapper class adding undo & redo functionality to whatever kind of object
         implementing __copy__/__deepcopy__ """
 
-    def __init__(self, obj: Any, max_stack_depths: int, craft_deep_copies=True):
-        self.obj = obj
-        self._craft_deep_copies = craft_deep_copies
+    def __init__(self, obj: _T, max_stack_depths: int, craft_deep_copies=True):
+        """ Parameters:
+                obj: object getting wrapped and unresolvable calls will be forwarded to via __getattr__
+                max_stack_depths: maximal number of obj copies to be respectively held by both undo & redo stack
+                craft_deep_copies: whether to craft copies by calling __copy__ or __deepcopy__ """
 
-        self._undo_stack: Deque[Any] = deque(maxlen=max_stack_depths)
-        self._redo_stack: Deque[Any] = deque(maxlen=max_stack_depths)
+        self.obj: _T = obj
+        self._craft_deep_copies: bool = craft_deep_copies
+
+        self._undo_stack: Deque[_T] = deque(maxlen=max_stack_depths)
+        self._redo_stack: Deque[_T] = deque(maxlen=max_stack_depths)
 
     def __getattr__(self, item):
         """ Forward unresolvable calls to obj """
@@ -68,17 +54,29 @@ class Unredoable(_UnredoableBase):
     #############
     def undo(self):
         """ Pushes current state to redo stack and set obj to popped
-        uppermost element from undo stack """
+        uppermost element from undo stack
+
+        Raises:
+            AttributeError if stack empty """
 
         self._push_state_to(self._redo_stack)
-        self.obj = self._undo_stack.pop()
+        try:
+            self.obj = self._undo_stack.pop()
+        except IndexError:
+            raise AttributeError('Undo stack empty')
 
     def redo(self):
         """ Pushes current state to undo stack and set obj to popped
-        uppermost element from redo stack """
+        uppermost element from redo stack
+
+        Raises:
+            AttributeError if stack empty """
 
         self._push_state_to(self._undo_stack)
-        self.obj = self._redo_stack.pop()
+        try:
+            self.obj = self._redo_stack.pop()
+        except IndexError:
+            raise AttributeError('Redo stack empty')
 
     ########
     # Misc #
@@ -88,57 +86,3 @@ class Unredoable(_UnredoableBase):
                f'wrapped obj: {self.obj} | ' \
                f'undo stack depth: {len(self._undo_stack)}, redo stack depth: {len(self._redo_stack)} | ' \
                f'max stack depth: {self._redo_stack.maxlen}'
-
-
-class UnredoableAdministrator(_UnredoableBase, ABC):
-    def __init__(self, *obj: Any, max_stack_depths: int):
-        self._unredoables: List[Unredoable] = list(
-            map(
-                lambda _obj: Unredoable(
-                    _obj,
-                    max_stack_depths=max_stack_depths
-                ),
-                obj
-            )
-        )
-
-    _Method = TypeVar('_Method', bound=Callable[..., Any])
-
-    def state_pusher(method: _Method) -> _Method:  # type: ignore
-        """ Method decorator pushing state of all unredoable objects
-            before triggering decorated method """
-
-        @wraps(method)
-        def wrapper(self, *args, **kwargs):
-            for unredoable in self._unredoables:
-                unredoable.push_state()
-            return method(self, *args, **kwargs)
-        return wrapper  # type: ignore
-
-    ################################
-    # Operation availability query #
-    ################################
-    @property
-    def is_undoable(self) -> bool:
-        return self._unredoables[0].is_undoable
-
-    @property
-    def is_redoable(self) -> bool:
-        return self._unredoables[0].is_redoable
-
-    #############
-    # Execution #
-    #############
-    def undo(self):
-        for unredoable in self._unredoables:
-            unredoable.undo()
-
-    def redo(self):
-        for unredoable in self._unredoables:
-            unredoable.redo()
-
-    ########
-    # Misc #
-    ########
-    def __str__(self):
-        return ' || '.join(map(str, [super] + self._unredoables))  # type: ignore

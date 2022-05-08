@@ -14,9 +14,9 @@ setup(
     license='MIT',
     description='Object-specific undoing and redoing functionality through wrapper class, as well as convenience for'
                 'integration into classes, managing unredoables',
-    long_description=long_description,
     long_description_content_type='text/markdown',
-    keywords=['state-management, frontend, web-development, gui'],
+    long_description=long_description,
+    keywords='state-management, frontend, web-development, gui',
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
