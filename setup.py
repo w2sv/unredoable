@@ -12,8 +12,7 @@ setup(
     packages=find_packages(exclude=(["tests"])),
     version=__version__,
     license='MIT',
-    description='Object-specific undoing and redoing functionality through wrapper class, as well as convenience for'
-                'integration into classes, managing unredoables',
+    description='Object-specific undoing and redoing functionality through wrapper class',
     long_description_content_type='text/markdown',
     long_description=long_description,
     keywords='state-management, frontend, web-development, gui',
