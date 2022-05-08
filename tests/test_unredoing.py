@@ -1,14 +1,14 @@
-from unredoable import UnredoableObject
+from unredoable import Unredoable
 import pytest
 
 
 @pytest.fixture
-def unredoable() -> UnredoableObject:
-    return UnredoableObject(int(), max_stack_depths=20)
+def unredoable() -> Unredoable:
+    return Unredoable(int(), max_stack_depths=20)
 
 
 def _add(_unredoable):
-    _unredoable.push_state_to_undo_stack()
+    _unredoable.push_state()
     _unredoable.obj += 1
 
 
@@ -17,7 +17,7 @@ _redo = lambda unredoable: unredoable.redo()
 
 
 def test___str__(unredoable):
-    assert str(unredoable) == 'UnredoableObject: 0 | undo stack depth: 0, redo stack depth: 0 | max stack depth: 20'
+    assert str(unredoable) == 'Unredoable: 0 | undo stack depth: 0, redo stack depth: 0 | max stack depth: 20'
 
 
 @pytest.mark.parametrize(

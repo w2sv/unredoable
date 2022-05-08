@@ -1,2 +1,2 @@
 from unredoable._version import __version__
-from unredoable._unredoing import UnredoableObject, UnredoableAdministrator
+from unredoable._unredoing import Unredoable, UnredoableAdministrator

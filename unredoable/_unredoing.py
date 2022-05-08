@@ -5,7 +5,7 @@ from functools import wraps
 from typing import Any, Callable, Deque, TypeVar, List
 
 
-class Unredoable(ABC):
+class _UnredoableBase(ABC):
     @abstractmethod
     def undo(self):
         """  """
@@ -25,12 +25,12 @@ class Unredoable(ABC):
         """  """
 
 
-class UnredoableObject(Unredoable):
+class Unredoable(_UnredoableBase):
     """ Wrapper class adding undo & redo functionality to whatever kind of object
         implementing __copy__/__deepcopy__ """
 
-    def __init__(self, target_object: Any, max_stack_depths: int, craft_deep_copies=True):
-        self.obj = target_object
+    def __init__(self, obj: Any, max_stack_depths: int, craft_deep_copies=True):
+        self.obj = obj
         self._craft_deep_copies = craft_deep_copies
 
         self._undo_stack: Deque[Any] = deque(maxlen=max_stack_depths)
@@ -44,7 +44,9 @@ class UnredoableObject(Unredoable):
     #################
     # State pushing #
     #################
-    def push_state_to_undo_stack(self):
+    def push_state(self):
+        """ Pushes copy of current object to undo stack """
+
         self._push_state_to(self._undo_stack)
 
     def _push_state_to(self, stack: deque):
@@ -65,10 +67,16 @@ class UnredoableObject(Unredoable):
     # Execution #
     #############
     def undo(self):
+        """ Pushes current state to redo stack and set obj to popped
+        uppermost element from undo stack """
+
         self._push_state_to(self._redo_stack)
         self.obj = self._undo_stack.pop()
 
     def redo(self):
+        """ Pushes current state to undo stack and set obj to popped
+        uppermost element from redo stack """
+
         self._push_state_to(self._undo_stack)
         self.obj = self._redo_stack.pop()
 
@@ -76,15 +84,17 @@ class UnredoableObject(Unredoable):
     # Misc #
     ########
     def __str__(self):
-        return f'{self.__class__.__name__}: {self.obj} | undo stack depth: {len(self._undo_stack)}, redo stack depth: {len(self._redo_stack)} | ' \
+        return f'{self.__class__.__name__} | ' \
+               f'wrapped obj: {self.obj} | ' \
+               f'undo stack depth: {len(self._undo_stack)}, redo stack depth: {len(self._redo_stack)} | ' \
                f'max stack depth: {self._redo_stack.maxlen}'
 
 
-class UnredoableAdministrator(Unredoable, ABC):
+class UnredoableAdministrator(_UnredoableBase, ABC):
     def __init__(self, *obj: Any, max_stack_depths: int):
-        self._unredoables: List[UnredoableObject] = list(
+        self._unredoables: List[Unredoable] = list(
             map(
-                lambda _obj: UnredoableObject(_obj, max_stack_depths=max_stack_depths),
+                lambda _obj: Unredoable(_obj, max_stack_depths=max_stack_depths),
                 obj
             )
         )
@@ -98,7 +108,7 @@ class UnredoableAdministrator(Unredoable, ABC):
         @wraps(method)
         def wrapper(self, *args, **kwargs):
             for unredoable in self._unredoables:
-                unredoable.push_state_to_undo_stack()
+                unredoable.push_state()
             return method(self, *args, **kwargs)
         return wrapper  # type: ignore
 
@@ -128,4 +138,4 @@ class UnredoableAdministrator(Unredoable, ABC):
     # Misc #
     ########
     def __str__(self):
-        return ' | '.join(map(str, [super] + self._unredoables))  # type: ignore
+        return ' || '.join(map(str, [super] + self._unredoables))  # type: ignore
