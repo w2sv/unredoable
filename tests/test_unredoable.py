@@ -133,4 +133,4 @@ def test_redo(commands, expected, unredoable):
 ########
 
 def test___str__(unredoable):
-    assert str(unredoable) == 'Unredoable: 0 | undo stack depth: 0, redo stack depth: 0 | max stack depth: 20'
+    assert str(unredoable) == 'Unredoable | wrapped obj: 0 | undo stack depth: 0, redo stack depth: 0 | max stack depth: 20'
