@@ -1,0 +1,19 @@
+# Generic
+__pycache__
+/.idea/
+/.mypy_cache/
+/.pytest_cache/
+logging.txt
+
+# Coverage
+/.coverage
+coverage.xml
+/htmlcov/
+
+# Envs
+/env/
+
+# Build
+/build/
+*.egg-info
+/dist/
