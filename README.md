@@ -1,4 +1,5 @@
 # __unredoable__
+Python package providing object-specific undoing & redoing functionality through wrapper class
 
 [![Build](https://github.com/w2sv/unredoable/actions/workflows/build.yaml/badge.svg)](https://github.com/w2sv/unredoable/actions/workflows/build.yaml)
 [![codecov](https://codecov.io/gh/w2sv/unredoable/branch/master/graph/badge.svg?token=9EESND69PG)](https://codecov.io/gh/w2sv/unredoable)
@@ -18,12 +19,12 @@ from unredoable import Unredoable
 
 class StateManager:
     def __init__(self, state_variable):
-        """ state_variable may be of whatever type, whether custom or not, 
-        the sole restraint it's subject to, is that is needs to implement 
-        either __copy__ or __deepcopy__, depending on the passed 
-        'craft_deep_copies' parameter """
-        
         self.unredoable_state_variable = Unredoable(state_variable, max_stack_depths=10, craft_deep_copies=False)
+        
+        # state_variable may be of whatever type, whether custom or not, 
+        # the sole restraint it's subject to, is that is needs to implement 
+        # either __copy__ or __deepcopy__, depending on the passed 
+        # 'craft_deep_copies' parameter
         
     def alter_state_variable(self):
         self.unredoable_state_variable.push_state()
