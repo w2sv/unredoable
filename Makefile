@@ -1,39 +1,32 @@
 SHELL=/bin/bash
 
-# --------------
-# Installation
-# --------------
-install:
-	rm -rf env
-	mamba env create -f environment.yml --prefix ./env
+###########
+# Testing #
+###########
 
-# --------------
-# Testing
-# --------------
-test: mypy pytest  # run with -k flag in order to continue in case of recipe failure
+test: mypy pytest coverage-report  # run with -k flag in order to continue in case of recipe failure
 
 mypy:
 	mypy unredoable/
 
 pytest:
 	coverage run -m pytest -vv tests/
+
+doctest:
+	python -m pytest -vv --doctest-modules --doctest-continue-on-failure ./unredoable/
+
+coverage-report:
 	coverage xml
 	coverage report
 
-coverage-html:
-	coverage html
-	firefox htmlcov/index.html
+##############
+# Publishing #
+##############
 
-# --------------
-# Building
-# --------------
-wheel:
-	rm -rf unredoable.egg-info
-	rm -rf build
-	rm -rf dist
+publish: test patch-version _publish
 
-	python setup.py sdist bdist_wheel --dist-dir ./dist
+patch-version:
+	poetry version patch
 
-upload: wheel
-	python -m twine check dist/*
-	python setup.py sdist bdist_wheel upload
+_publish:
+	poetry publish --build

@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "unredoable"
+version = "0.0.3"
+description = "Object-specific undoing and redoing functionality through wrapper class"
+authors = ["w2sv <zangenbergjanek@googlemail.com>"]
+license = "MIT"
+repository = "https://github.com/w2sv/monostate"
+keywords=['state-management', 'frontend', 'web-development', 'gui']
+classifiers = [
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+
+[tool.poetry.dev-dependencies]
+mypy = "*"
+pytest = "*"
+coverage = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
