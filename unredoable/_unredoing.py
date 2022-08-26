@@ -1,9 +1,11 @@
 from collections import deque
 from copy import copy, deepcopy
-from typing import Deque, TypeVar
+from functools import wraps
+from typing import Any, Callable, Deque, TypeVar
 
 
 _T = TypeVar('_T')
+_FuncT = TypeVar('_FuncT', bound=Callable[..., Any])
 
 
 class Unredoable:
@@ -30,17 +32,26 @@ class Unredoable:
     #################
     # State pushing #
     #################
+
     def push_state(self):
         """ Pushes copy of current object to undo stack """
 
         self._push_state_to(self._undo_stack)
 
+    def state_pusher(self, f: _FuncT) -> _FuncT:
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            self.push_state()
+            return f(*args, **kwargs)
+        return wrapper  # type: ignore
+
     def _push_state_to(self, stack: deque):
         stack.append(deepcopy(self.obj) if self._craft_deep_copies else copy(self.obj))
 
-    ################################
-    # Operation availability query #
-    ################################
+    ##########################
+    # Operation availability #
+    ##########################
+
     @property
     def is_undoable(self) -> bool:
         return bool(self._undo_stack)
@@ -52,9 +63,10 @@ class Unredoable:
     #############
     # Execution #
     #############
+
     def undo(self):
-        """ Pushes current state to redo stack and set obj to popped
-        uppermost element from undo stack
+        """ Pushes current state to redo stack and set obj to the uppermost
+        popped element from undo stack
 
         Raises:
             AttributeError if stack empty """
@@ -81,7 +93,11 @@ class Unredoable:
     ########
     # Misc #
     ########
+
     def __str__(self):
+        return str(self.obj)
+
+    def __repr__(self):
         return f'{self.__class__.__name__} | ' \
                f'wrapped obj: {self.obj} | ' \
                f'undo stack depth: {len(self._undo_stack)}, redo stack depth: {len(self._redo_stack)} | ' \

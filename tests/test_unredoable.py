@@ -16,16 +16,12 @@ _undo = lambda unredoable: unredoable.undo()
 _redo = lambda unredoable: unredoable.redo()
 
 
-def test_raising_on_empty_undo_stack():
-    unredoable = Unredoable(int(), max_stack_depths=10)
-
+def test_raising_on_empty_undo_stack(unredoable):
     with pytest.raises(AttributeError):
         unredoable.undo()
 
 
-def test_raising_on_empty_redo_stack():
-    unredoable = Unredoable(int(), max_stack_depths=10)
-
+def test_raising_on_empty_redo_stack(unredoable):
     with pytest.raises(AttributeError):
         unredoable.redo()
 
@@ -33,6 +29,18 @@ def test_raising_on_empty_redo_stack():
 def test_call_forwarding(unredoable):
     _ = unredoable.numerator
 
+
+def test_state_pusher(unredoable):
+
+    @unredoable.state_pusher
+    def state_pushing_function():
+        unredoable.obj = 79
+
+    state_pushing_function()
+    assert unredoable.obj == 79
+
+    unredoable.undo()
+    assert unredoable.obj == int()
 
 ################################
 # Operation Feasibility checks #
@@ -150,5 +158,9 @@ def test_redo(commands, expected, unredoable):
 # Misc #
 ########
 
-def test___str__(unredoable):
-    assert str(unredoable) == 'Unredoable | wrapped obj: 0 | undo stack depth: 0, redo stack depth: 0 | max stack depth: 20'
+def test_repr(unredoable):
+    assert repr(unredoable) == 'Unredoable | wrapped obj: 0 | undo stack depth: 0, redo stack depth: 0 | max stack depth: 20'
+
+
+def test_str(unredoable):
+    assert str(unredoable) == '0'
