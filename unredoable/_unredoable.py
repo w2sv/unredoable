@@ -21,7 +21,7 @@ class Unredoable(_Proxy[_T]):
     """ Wrapper class adding undo & redo functionality to whatever kind of object
         implementing __copy__/__deepcopy__ """
 
-    def __init__(self, obj: _T, max_stack_depths: int, craft_deep_copies=True):
+    def __init__(self, obj: _T, max_stack_depths=20, craft_deep_copies=True):
         """ Parameters:
                 obj: object getting wrapped and unresolvable calls will be forwarded to via __getattr__
                 max_stack_depths: maximal number of obj copies to be respectively held by both undo & redo stack
