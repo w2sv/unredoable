@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "unredoable"
-version = "0.0.4"
+version = "0.0.5"
 description = "Object-specific undoing and redoing functionality through wrapper class"
 authors = ["w2sv <zangenbergjanek@googlemail.com>"]
 license = "MIT"

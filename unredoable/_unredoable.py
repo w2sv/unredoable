@@ -1,14 +1,23 @@
+from abc import ABC
 from collections import deque
 from copy import copy, deepcopy
 from functools import wraps
-from typing import Any, Callable, Deque, TypeVar
+from typing import Any, Callable, Deque, Generic, TypeVar
 
 
 _T = TypeVar('_T')
 _FuncT = TypeVar('_FuncT', bound=Callable[..., Any])
 
 
-class Unredoable:
+class _Proxy(Generic[_T], ABC):
+    def __init__(self, obj: _T):
+        self.obj = obj
+
+    def __getattr__(self, item):
+        return getattr(self.obj, item)
+
+
+class Unredoable(_Proxy[_T]):
     """ Wrapper class adding undo & redo functionality to whatever kind of object
         implementing __copy__/__deepcopy__ """
 
@@ -18,16 +27,12 @@ class Unredoable:
                 max_stack_depths: maximal number of obj copies to be respectively held by both undo & redo stack
                 craft_deep_copies: whether to craft copies by calling __copy__ or __deepcopy__ """
 
-        self.obj: _T = obj
+        super().__init__(obj)
+
         self._craft_deep_copies: bool = craft_deep_copies
 
         self._undo_stack: Deque[_T] = deque(maxlen=max_stack_depths)
         self._redo_stack: Deque[_T] = deque(maxlen=max_stack_depths)
-
-    def __getattr__(self, item):
-        """ Forward unresolvable calls to obj """
-
-        return getattr(self.obj, item)
 
     #################
     # State pushing #
@@ -65,7 +70,7 @@ class Unredoable:
     #############
 
     def undo(self):
-        """ Pushes current state to redo stack and set obj to the uppermost
+        """ Pushes current state to redo stack and sets obj to the uppermost
         popped element from undo stack
 
         Raises:
@@ -78,8 +83,8 @@ class Unredoable:
             raise AttributeError('Undo stack empty')
 
     def redo(self):
-        """ Pushes current state to undo stack and set obj to popped
-        uppermost element from redo stack
+        """ Pushes current state to undo stack and sets obj to uppermost
+        popped element from redo stack
 
         Raises:
             AttributeError if stack empty """
